@@ -9,3 +9,17 @@
   [{:name name
     :decl glsl
     :args (mix-args args base)}])
+
+(defn geometry [name base glsl pipe & args]
+  (concat
+   [{:name name
+     :decl glsl
+     :args (mix-args args base)}]
+   pipe))
+
+(defn recolor [name base glsl pipe & args]
+  (concat
+   pipe
+   [{:name name
+     :decl glsl
+     :args (mix-args args base)}]))

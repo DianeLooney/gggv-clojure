@@ -1,26 +1,74 @@
 (ns hydra.core-test
   (:require [clojure.test :refer :all]
-            [hydra.core :refer :all]))
+            [hydra.core :as h]))
 
-(deftest test-mix-args
-  (are [x y z] (= x (mix-args y z))
+(deftest mix-args
+  (are [x y z] (= x (h/mix-args y z))
     []      []   []
     []      [:a] []
     [:a :b] []   [:a :b]
     [:c :b] [:c] [:a :b]))
 
-(deftest test-colorize
-  (is (= (colorize "bananas" [:a :b] "glsl" [])
+(deftest colorize
+  (is (= (h/colorize "bananas" [:a :b] "glsl" [])
          [{:name "bananas"
            :decl "glsl"
-           :args '(:a :b)}])))
+           :args '(:a :b)}]))
 
-(deftest test-partial-colorize
-  (let [p (partial colorize "bananas" [:a :b] "glsl")]
-    (are [x y] (= x y)
-      (p []) [{:name "bananas"
-            :decl "glsl"
-            :args '(:a :b)}]
-      (p [:c]) [{:name "bananas"
+  (testing "partials"
+    (let [p (partial h/colorize "bananas" [:a :b] "glsl")]
+      (are [x y] (= x y)
+        (p []) [{:name "bananas"
+                 :decl "glsl"
+                 :args '(:a :b)}]
+        (p [:c]) [{:name "bananas"
+                   :decl "glsl"
+                   :args '(:c :b)}]))))
+
+(deftest geometry
+  (is (= (h/geometry "apples" [:a :b] "glsl" [:pipe] :c)
+         [{:name "apples"
+           :decl "glsl"
+           :args [:c :b]}
+          :pipe]))
+
+  (testing "partials"
+    (let [p (partial h/geometry "apples" [:a :b] "glsl")]
+      (is (= (-> [:pipe] (p :c))
+             [{:name "apples"
                :decl "glsl"
-               :args '(:c :b)}])))
+               :args [:c :b]}
+              :pipe]))
+      (is (= (-> [:pipe] p)
+             [{:name "apples"
+               :decl "glsl"
+               :args [:a :b]}
+              :pipe])))))
+
+(deftest recolor
+  (is (= (h/recolor "carrots" [:a :b] "glsl" [:pipe] :c)
+         [:pipe
+          {:name "carrots"
+           :decl "glsl"
+           :args [:c :b]}])))
+
+(deftest example
+  (testing "steps get reordered correctly"
+    (let [a (partial h/colorize "apples"    [:a :b] "glsl a")
+          b (partial h/geometry "bananas"   [:c :d] "glsl b")
+          c (partial h/geometry "carrots"   [:e :f] "glsl c")
+          d (partial h/recolor  "dumplings" [:g :h] "glsl d")
+
+          ex1 (-> (a []) d b c)
+          ex2 (-> (a []) b d c)
+          ex3 (-> (a []) b c d)
+
+          fixture [{:name "carrots",   :decl "glsl c", :args [:e :f]}
+                   {:name "bananas",   :decl "glsl b", :args [:c :d]}
+                   {:name "apples",    :decl "glsl a", :args [:a :b]}
+                   {:name "dumplings", :decl "glsl d", :args [:g :h]}]]
+
+      (are [x y] (= x y)
+        ex1 fixture
+        ex2 fixture
+        ex3 fixture))))
