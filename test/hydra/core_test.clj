@@ -11,39 +11,22 @@
 
 (deftest colorize
   (is (= (h/colorize "bananas" [:a :b] "glsl" [])
-         [{:name "bananas"
-           :decl "glsl"
-           :args '(:a :b)}]))
+         [{:name "bananas", :decl "glsl", :args '(:a :b)}]))
 
   (testing "partials"
     (let [p (partial h/colorize "bananas" [:a :b] "glsl")]
       (are [x y] (= x y)
-        (p []) [{:name "bananas"
-                 :decl "glsl"
-                 :args '(:a :b)}]
-        (p [:c]) [{:name "bananas"
-                   :decl "glsl"
-                   :args '(:c :b)}]))))
+        (p [])   [{:name "bananas", :decl "glsl", :args '(:a :b)}]
+        (p [:c]) [{:name "bananas", :decl "glsl", :args '(:c :b)}]))))
 
 (deftest geometry
   (is (= (h/geometry "apples" [:a :b] "glsl" [:pipe] :c)
-         [{:name "apples"
-           :decl "glsl"
-           :args [:c :b]}
-          :pipe]))
+         [{:name "apples", :decl "glsl", :args [:c :b]}, :pipe]))
 
   (testing "partials"
     (let [p (partial h/geometry "apples" [:a :b] "glsl")]
-      (is (= (-> [:pipe] (p :c))
-             [{:name "apples"
-               :decl "glsl"
-               :args [:c :b]}
-              :pipe]))
-      (is (= (-> [:pipe] p)
-             [{:name "apples"
-               :decl "glsl"
-               :args [:a :b]}
-              :pipe])))))
+      (is (= (-> [:pipe] (p :c)) [{:name "apples", :decl "glsl", :args [:c :b]}, :pipe]))
+      (is (= (-> [:pipe] p)      [{:name "apples", :decl "glsl", :args [:a :b]}, :pipe])))))
 
 (deftest recolor
   (is (= (h/recolor "carrots" [:a :b] "glsl" [:pipe] :c)
@@ -72,3 +55,8 @@
         ex1 fixture
         ex2 fixture
         ex3 fixture))))
+
+(deftest render
+  (is (= (h/render [{:name "apples", :args [420 69]}])
+         {:s "apples(ftc, uniform455, uniform456)"
+          :u {'uniform455 420, 'uniform456 69}})))
