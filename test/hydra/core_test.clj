@@ -57,6 +57,9 @@
         ex3 fixture))))
 
 (deftest render
-  (is (= (h/render [{:name "apples", :args [420 69]}])
-         {:s "apples(ftc, uniform455, uniform456)"
-          :u {'uniform455 420, 'uniform456 69}})))
+  (is (= (h/render [{:name "apples", :args [420 69], :decl "glsl a"}])
+         {:s "apples(ftc, uniform444, uniform445)"
+          :u {'uniform444 420, 'uniform445 69}
+          :t {"apples" "glsl a"
+              'uniform444 "uniform float uniform444;"
+              'uniform445 "uniform float uniform445;"}})))

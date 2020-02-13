@@ -1,5 +1,4 @@
-(ns hydra.core
-  (:gen-class))
+(ns hydra.core)
 
 (defn mix-args [args base]
   (concat (take (count base) args)
@@ -16,12 +15,13 @@
 
 (defn render [v]
   (cond
-    (nil? v) {:s "ftc", :u {}}
-    (not (coll? v)) (let [k (gensym 'uniform)] {:s k, :u {k v}})
+    (nil? v) {:s "ftc", :u {}, :t {}}
+    (not (coll? v)) (let [k (gensym 'uniform)] {:s k, :u {k v}, :t {k (str "uniform float " k ";")}})
     :else (let [step  (last v)
                 chain (render (butlast v))
                 args  (map render (:args step))]
-            {:s (apply str (flatten [(:name step) "(" (:s chain)
+            {:s (apply str (flatten [(name (:name step)) "(" (:s chain)
                                      (map #(list ", " (:s %)) args)
                                      ")"]))
-             :u (apply merge (map :u args))})))
+             :u (merge (:u chain) (apply merge (map :u args)))
+             :t (merge {(:name step) (:decl step)} (:t chain) (apply merge (map :t args)))})))
