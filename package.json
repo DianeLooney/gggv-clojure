@@ -1,0 +1,9 @@
+{
+  "name": "gggv",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "node-osc": "^4.1.4"
+  }
+}
