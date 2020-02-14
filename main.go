@@ -66,10 +66,7 @@ func spawn(kill chan bool) (done chan bool) {
 func main() {
 	kill := spawn(nil)
 	w := watcher.New()
-	if err := w.Add("src/gggv/runtime.cljs"); err != nil {
-		panic(err)
-	}
-	if err := w.Add("src/gggv/show.cljs"); err != nil {
+	if err := w.AddRecursive("src/"); err != nil {
 		panic(err)
 	}
 	go w.Start(300 * time.Millisecond)

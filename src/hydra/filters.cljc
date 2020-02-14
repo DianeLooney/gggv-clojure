@@ -5,7 +5,7 @@
   (partial geometry :pulsate [1 1]
            "vec2 pulsate(vec2 xy, float r, float ex) {
              vec2 p = cToP(xy);
-             p.x += pow(.5 * (1. + sin(p.x * r + 0) / r), ex);
+             p.x -= 3 * pow(abs( cos(p.x - time*r)), ex);
              return pToC(p);
             }"))
 
@@ -13,13 +13,17 @@
   (partial geometry :scale [20]
            "vec2 scale(vec2 xy, float r) { return xy * vec2(r); }"))
 
+(def pixelate
+  (partial geometry :pixelate [40]
+           "vec2 pixelate(vec2 xy, float n) { return floor(xy * n) / n; }"))
+
 (def rotate
   (partial geometry :rotate [0]
            "vec2 rotate(vec2 xy, float theta) { return pToC(cToP(xy) + vec2(0, theta)); }"))
 
 (def osc
   (partial colorize :osc []
-           "vec4 osc(vec2 xy) { return .5 * (1 + vec4(sin(xy), 0, 1)); }"))
+           "vec4 osc(vec2 xy) { return .5 * (1 + vec4(cos(xy), 0, 1)); }"))
 
 (def shift-hsv
   (partial recolor :shiftHsv [0.5 0.5 0.5]
