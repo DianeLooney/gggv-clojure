@@ -4,8 +4,11 @@
   (concat (take (count base) args)
           (nthrest base (count args))))
 
-(defn colorize [name base glsl args]
-  [{:name name, :decl glsl, :args (mix-args args base)}])
+(def colorize
+  (fn
+    ([name base glsl]              [{:name name, :decl glsl, :args [], :sources []}])
+    ([name base glsl args]         [{:name name, :decl glsl, :args (mix-args args base), :sources []}])
+    ([name base glsl sources args] [{:name name, :decl glsl, :args (mix-args args base), :sources sources}])))
 
 (defn geometry [name base glsl pipe & args]
   (concat [{:name name, :decl glsl, :args (mix-args args base)}] pipe))
@@ -15,13 +18,23 @@
 
 (defn render [v]
   (cond
-    (nil? v) {:s "ftc", :u {}, :t {}}
-    (not (coll? v)) (let [k (gensym 'uniform)] {:s k, :u {k v}, :t {k (str "uniform float " k ";")}})
-    :else (let [step  (last v)
-                chain (render (butlast v))
-                args  (map render (:args step))]
-            {:s (apply str (flatten [(name (:name step)) "(" (:s chain)
-                                     (map #(list ", " (:s %)) args)
-                                     ")"]))
-             :u (merge (:u chain) (apply merge (map :u args)))
-             :t (merge {(:name step) (:decl step)} (:t chain) (apply merge (map :t args)))})))
+    (nil? v) {:s "ftc", :u {}, :t {}, :r #{}}
+    (coll? v) (let [step  (last v)
+                    chain (render (butlast v))
+                    args  (map render (:args step))]
+                {:i (concat (:i chain) (:sources step))
+                 :s (apply str (flatten [(name (:name step)) "(" (:s chain)
+                                         (map #(list ", " (:s %)) args)
+                                         ")"]))
+                 :u (merge (:u chain) (apply merge (map :u args)))
+                 :t (merge {(:name step) (:decl step)} (:t chain) (apply merge (map :t args)))
+                 :r (clojure.set/union (:r chain) (apply clojure.set/union (map :r args)))})
+    (= v :storage) (let [k (gensym 'storage)]
+                     {:s k
+                      :t {k (str "layout(rgba8) uniform image2D " k ";")}
+                      :r #{k}})
+    :else (let [k (gensym 'u)]
+            {:s k
+             :u {k v}
+             :t {k (str "uniform float " k ";")}
+             :r #{}})))

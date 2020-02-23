@@ -20,6 +20,7 @@
    (osc "/source.shader/set/dimensions" (:name data) (:width data) (:height data))
    (osc "/source.shader/set/drawcount" (:name data) (:pc data))
    (geometry->osc (:name data) (:geometry data))
+   (map #(osc "/source.shader/add/storage" (:name data) %) (:storage data))
    (map-indexed #(osc "/source.shader/set/input" (:name data) %1 (:name %2)) (:inputs data))
    (map #(uniform->osc (:name data) %1 (get (:uniforms data) %1)) (keys (:uniforms data)))])
 

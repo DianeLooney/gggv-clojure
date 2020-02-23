@@ -1,6 +1,10 @@
 (ns hydra.filters
   (:use [hydra.core :only (colorize geometry recolor)]))
 
+(def osc
+  (partial colorize :osc []
+           "vec4 osc(vec2 xy) { return .5 * (1 + vec4(cos(xy), 0, 1)); }"))
+
 (def pulsate
   (partial geometry :pulsate [1 1]
            "vec2 pulsate(vec2 xy, float r, float ex) {
@@ -21,16 +25,45 @@
   (partial geometry :rotate [0]
            "vec2 rotate(vec2 xy, float theta) { return pToC(cToP(xy) + vec2(0, theta)); }"))
 
-(def osc
-  (partial colorize :osc []
-           "vec4 osc(vec2 xy) { return .5 * (1 + vec4(cos(xy), 0, 1)); }"))
-
 (def shift-hsv
   (partial recolor :shiftHsv [0.5 0.5 0.5]
            "vec4 shiftHsv(vec4 c, float h, float s, float v) {
               vec3 x = rgb2hsv(c.rgb);
-              x = fract(x + vec3(h, s, v));
-              return vec4(hsv2rgb(x.rgb), c.a);
+              return vec4(hsv2rgb(fract(x + vec3(h, s, v))), 1);
+            }"))
+
+(def pride
+  (partial recolor :pride []
+           "vec4 pride(vec4 c) {
+              vec3 color0 = vec3(0, 0, 0);
+              vec3 color1 = vec3(155.0 / 255.0, 89.0 / 255.0, 208.0 / 255.0); //purple (155,89,208)
+              vec3 color2 = vec3(255.0 / 255.0, 244.0 /255.0, 51.0 / 255.0); // yellow (255,244,51)
+              float b = length(c.rgb);
+              if (b<1) return vec4(color0, 1);
+              if (b<1.4) return vec4(color1, 1);
+              return vec4(color2, 1);
+            }"))
+
+(def haze
+  (partial recolor :haze [0.01 :storage]
+           "vec4 haze(vec4 c, float speed, layout(rgba8) image2D store) {
+              vec4 p = imageLoad(store, iftc);
+              c = p + clamp(c-p, -vec4(speed), vec4(speed));
+              imageStore(store, iftc, c);
+              return vec4(c.rgb, c.a);
+            }"))
+
+(def invert
+  (partial recolor :invert []
+           "vec4 invert(vec4 c) {
+              return vec4(1 - c.rgb, c.a);
+            }"))
+
+(def threshold
+  (partial recolor :threshold []
+           "vec4 threshold(vec4 c) {
+              if (length(c.rgb) > 1) return c;
+              return vec4(0);
             }"))
 
 (def posterize

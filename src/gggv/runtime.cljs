@@ -20,9 +20,9 @@
   (.send client (clj->js msg)))
 (defn send [msg]
   (cond
-   (nil? msg) nil
-   (fn? msg) (js/setInterval #(send-raw (msg) 17))
-   :else  (send-raw msg)))
+    (nil? msg) nil
+    (fn? msg) (js/setInterval #(send-raw (msg)) 17)
+    :else  (send-raw msg)))
 
 (def queue (atom []))
 (defn push-osc [& msgs] (swap! queue concat msgs))
@@ -65,7 +65,8 @@
      :width width
      :height height
      :name n
-     :inputs inputs
+     :inputs  (:i data)
+     :storage (:r data)
      :uniforms uniforms}))
 
 (defn mag-linear [input]
