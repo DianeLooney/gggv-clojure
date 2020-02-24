@@ -33,15 +33,12 @@
             }"))
 
 (def pride
-  (partial recolor :pride []
-           "vec4 pride(vec4 c) {
-              vec3 color0 = vec3(0, 0, 0);
-              vec3 color1 = vec3(155.0 / 255.0, 89.0 / 255.0, 208.0 / 255.0); //purple (155,89,208)
-              vec3 color2 = vec3(255.0 / 255.0, 244.0 /255.0, 51.0 / 255.0); // yellow (255,244,51)
-              float b = length(c.rgb);
-              if (b<1) return vec4(color0, 1);
-              if (b<1.4) return vec4(color1, 1);
-              return vec4(color2, 1);
+  (partial recolor :pride [[0 0 0] [0.5 0.5 0.5] [1 1 1] 0.333 0.333 0.333]
+           "vec4 pride(vec4 c, vec3 c1, vec3 c2, vec3 c3, float w1, float w2, float w3) {
+              float x = rgb2hsv(c.rgb).z * (w1 + w2 + w3);
+              if (x<w1) return vec4(c1, 1);
+              if (x<w1 + w2) return vec4(c2, 1);
+              return vec4(c3, 1);
             }"))
 
 (def haze

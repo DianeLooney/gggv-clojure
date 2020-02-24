@@ -15,11 +15,10 @@
 (-> (osc {})
     (scale)
     (rotate 0.5)
-    ; (pulsate 1 10.5)
-    (rotate (mod t 6.28))
-    (shift-hsv (+ (mod t 1) 0) 0.5 0.5)
-    (haze 0.1)
-    ; (haze 0.015)
-    ; (posterize 6 1)
+    (pulsate 1 10.5)
+    (rotate #(mod t 6.28))
+    (shift-hsv #(+ (mod t 1) 0) 0.5 0.5)
+    invert
+    pride
     hydra
     out)
