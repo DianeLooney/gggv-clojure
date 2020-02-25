@@ -35,6 +35,9 @@
 (def pride
   (partial recolor :pride [[0 0 0] [0.5 0.5 0.5] [1 1 1] 0.333 0.333 0.333]
            "vec4 pride(vec4 c, vec3 c1, vec3 c2, vec3 c3, float w1, float w2, float w3) {
+              c1 = hsv2rgb(c1);
+              c2 = hsv2rgb(c2);
+              c3 = hsv2rgb(c3);
               float x = rgb2hsv(c.rgb).z * (w1 + w2 + w3);
               if (x<w1) return vec4(c1, 1);
               if (x<w1 + w2) return vec4(c2, 1);
