@@ -3,7 +3,7 @@
 
 (def osc
   (partial colorize :osc []
-           "vec4 osc(vec2 xy) { return .5 * (1 + vec4(cos(xy), 0, 1)); }"))
+           "vec4 osc(vec2 xy) { return vec4(.5 * (1 + cos(xy)), 0, 1); }"))
 
 (def pulsate
   (partial geometry :pulsate [1 1]
@@ -23,7 +23,7 @@
 
 (def rotate
   (partial geometry :rotate [0]
-           "vec2 rotate(vec2 xy, float theta) { return pToC(cToP(xy) + vec2(0, theta)); }"))
+           "vec2 rotate(vec2 xy, float theta) { return pToC(cToP(xy) + vec2(0, 2*PI*theta)); }"))
 
 (def shift-hsv
   (partial recolor :shiftHsv [0.5 0.5 0.5]

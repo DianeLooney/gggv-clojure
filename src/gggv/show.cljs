@@ -16,9 +16,9 @@
     (scale)
     (rotate 0.5)
     (pulsate 1 10.5)
-    (rotate #(mod t 6.28))
-    (shift-hsv #(+ (mod t 1) 0) 0.5 0.5)
-    invert
-    pride
+    ;invert
+    haze
+    (pride {:vec3 'midiHSV3} {:vec3 'midiHSV4} {:vec3 'midiHSV5}
+           {:float 'midiV3} {:float 'midiV4} {:float 'midiV5})
     hydra
     out)
