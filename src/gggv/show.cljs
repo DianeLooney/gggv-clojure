@@ -3,7 +3,7 @@
         [gggv.runtime  :only (hydra t mag-linear out)]
         [gggv.core     :only (shader shader-gen)]
         [hydra.core    :only (colorize geometry recolor render)]
-        [hydra.filters :only (pulsate invert haze pride threshold rotate pixelate scale osc shift-hsv posterize)]))
+        [hydra.filters :only (oc from to pulsate invert haze pride threshold rotate pixelate scale osc shift-hsv posterize)]))
 
 (def mix-layers (shader {:f "mix.layers"} {}))
 (def highlights (shader {:f "highlights"} {}))
@@ -12,15 +12,14 @@
 (def cosin (.-cos js/Math))
 (def tan (.-tan js/Math))
 
-(-> (osc {})
-    (scale)
-    (rotate 0.5)
-    (pulsate 1 10.5)
-    haze
-    (pride [#(mod t 1) 1 1]
-           [#(mod (+ 0.3 t) 1) 1 1]
-           [#(mod (+ 0.6 t) 1) 1 1]
-           1 1 1)
-    invert
-    hydra
+(-> (hydra
+     (-> (osc {})
+         (scale)
+         (rotate 0.5)
+         (pulsate 1 10.5)
+         (pride {:vec3 'midiHSV3} {:vec3 'midiHSV4} {:vec3 'midiHSV5}
+                {:float 'midiV3} {:float 'midiV4} {:float 'midiV5})
+         (to 'x))
+     (-> (from [{:storage 'x}])
+         oc))
     out)

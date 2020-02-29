@@ -1,6 +1,10 @@
 (ns hydra.filters
   (:use [hydra.core :only (colorize geometry recolor)]))
 
+(def from
+  (partial colorize :from [:storage]
+           "vec4 from(vec2 xy, layout(rgba8) image2D storage) { return imageLoad(storage, ivec2(xy * vec2(windowWidth, windowHeight))); }"))
+
 (def osc
   (partial colorize :osc []
            "vec4 osc(vec2 xy) { return vec4(.5 * (1 + cos(xy)), 0, 1); }"))
@@ -76,4 +80,15 @@
               c = pow(c, vec4(1. / alpha));
               return c;
             }"))
+(def oc
+  (partial recolor :setOutputColor []
+           "vec4 setOutputColor(vec4 c) { outputColor = c; return c; }"))
 
+(def store
+  (partial recolor :store [:storage]
+           "vec4 store(vec4 c, layout(rgba8) image2D storage) {
+              imageStore(storage, iftc, c);
+              return c;
+            }"))
+
+(defn to [chain name] (store chain {:storage name}))

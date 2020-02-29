@@ -32,16 +32,17 @@
 (js/setInterval send-next 5)
 
 (def write-file-sync (.-writeFileSync (js/require "fs")))
-(defn hydra [steps]
+(defn hydra [& steps]
   (let [n (gensym "frag")
-        data (h/render steps)
-        call-str (:s data)
-        uniforms (:u data)
+        datas (map h/render steps)
+        call-strs (map :s datas)
+        uniforms (apply merge (map :u datas))
+        ts (apply merge (map :t datas))
         glsl (string/join
               "\n"
-              (flatten [(vals (:t data))
+              (flatten [(vals ts)
                         "void main() {"
-                        (str "outputColor = " call-str ";")
+                        (map #(str % ";") call-strs)
                         "};"]))
         geometry [-1 -1 0 0 0 0
                   +1 -1 0 1 0 0
@@ -65,8 +66,8 @@
      :width width
      :height height
      :name n
-     :inputs  (:i data)
-     :storage (:r data)
+     :inputs  (flatten (map :i datas))
+     :storage (apply clojure.set/union (map :r datas))
      :uniforms uniforms}))
 
 (defn mag-linear [input]
