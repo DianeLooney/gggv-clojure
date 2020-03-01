@@ -17,8 +17,8 @@
          (scale)
          (rotate 0.5)
          (pulsate 1 10.5)
-         (pride {:vec3 'midiHSV3} {:vec3 'midiHSV4} {:vec3 'midiHSV5}
-                {:float 'midiV3} {:float 'midiV4} {:float 'midiV5})
+         (pride [1 1 1] [0.6 0.6 0.6] [0.3 0.3 0.3]
+                1 1 1)
          (to 'x))
      (-> (from [{:storage 'x}])
          oc))
