@@ -114,7 +114,7 @@ vec2 noise2(vec2 coord, float seed) {
   return fract(1264.2135 * sin((coord + seed) * 17237.28348));
 }*/
 
-vec2 ftc = (fragTexCoord - 0.5) * vec2(windowWidth / windowHeight, 1);
+vec2 ftc = fragTexCoord;
 
 vec2 v4ToV2(vec4 v) {
   vec2 high_bits = v.rg;
