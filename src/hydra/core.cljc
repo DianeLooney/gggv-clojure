@@ -30,25 +30,37 @@
        (= 3 (count v))
        (all? number? v)))
 
+(defn external-symbol? [v]
+  (and (not= v :storage)
+       (or (symbol? v)
+           (keyword? v))))
+
+(defn uniform? [v]
+  (or (= v :storage)
+      (number? v)
+      (vec3? v)
+      (fn? v)))
+
+(defn standardize-uniform [v]
+  (cond (= v :storage) {:name (gensym 'storage), :kind :image2D}
+        (symbol? v)    {:name (name v)}
+        (keyword? v)   {:name (name v)}
+        (number? v)    {:name (gensym 'u), :kind :float, :value v}
+        (vec3? v)      {:name (gensym 'u), :kind :vec3,  :value v}
+        (fn? v)        (merge (standardize-uniform (v)) {:value v})))
+
 (defn render [v]
   (cond
     (nil? v) {:s "ftc", :u {}, :t {}, :r #{}}
-    (:vec3 v) (let [k (:vec3 v)]
-                {:s k
-                 :t {k (str "uniform vec3 " k ";")}})
-    (:float v) (let [k (:float v)]
-                 {:s k
-                  :t {k (str "uniform float " k ";")}})
-    (vec3? v) (let [k (gensym 'u)]
-                {:s k
-                 :u {k v}
-                 :t {k (str "uniform vec3 " k ";")}
-                 :r #{}})
-    (vec4? v) (let [k (gensym 'u)]
-                {:s k
-                 :u {k v}
-                 :t {k (str "uniform vec4 " k ";")}
-                 :r #{}})
+    (uniform? v) (let [u (standardize-uniform v)
+                       named (:name u)
+                       kind  (:kind u)
+                       value (:value u)]
+                   {:s named
+                    :t (if kind  {named (str (if (= v :storage) "layout(rgba8) ") "uniform " (name kind) " " named ";")} {})
+                    :u (if value {named value})
+                    :r (if (= v :storage) #{named})})
+    (external-symbol? v) {:s (name v)}
     (coll? v) (let [step  (last v)
                     chain (render (butlast v))
                     args  (map render (:args step))]
@@ -58,13 +70,4 @@
                                          ")"]))
                  :u (merge (:u chain) (apply merge (map :u args)))
                  :t (merge {(:name step) (:decl step)} (:t chain) (apply merge (map :t args)))
-                 :r (clojure.set/union (:r chain) (apply clojure.set/union (map :r args)))})
-    (= v :storage) (let [k (gensym 'storage)]
-                     {:s k
-                      :t {k (str "layout(rgba8) uniform image2D " k ";")}
-                      :r #{k}})
-    :else (let [k (gensym 'u)]
-            {:s k
-             :u {k v}
-             :t {k (str "uniform float " k ";")}
-             :r #{}})))
+                 :r (clojure.set/union (:r chain) (apply clojure.set/union (map :r args)))})))
