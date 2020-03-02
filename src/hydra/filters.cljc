@@ -3,7 +3,13 @@
 
 (def from
   (partial colorize :from [:storage]
-           "vec4 from(vec2 xy, layout(rgba8) image2D storage) { return imageLoad(storage, ivec2(xy * vec2(windowWidth, windowHeight))); }"))
+           "vec4 from(vec2 xy, layout(rgba8) image2D storage) {
+              vec2 _xy = fract(xy);
+              return imageLoad(
+                storage,
+                ivec2(_xy*vec2(windowWidth, windowHeight))
+              );
+            }"))
 
 (def osc
   (partial colorize :osc []

@@ -25,6 +25,10 @@
       (fn [] (map #(if (fn? %) (%) %) v))
       v))
 
+(defn storage? [v]
+  (or (= v :storage)
+      (:storage v)))
+
 (defn vec4? [v]
   (and (coll? v)
        (= 3 (count v))
@@ -36,12 +40,12 @@
        (all? #(number? (if (fn? %) (%) %)) v)))
 
 (defn external-symbol? [v]
-  (and (not= v :storage)
+  (and (not (storage?))
        (or (symbol? v)
            (keyword? v))))
 
 (defn uniform? [v]
-  (or (= v :storage)
+  (or (storage? v)
       (number? v)
       (vec3? v)
       (fn? v)))
@@ -50,12 +54,13 @@
   (cond (= v :storage) {:name (gensym 'storage), :kind :image2D}
         (symbol? v)    {:name (name v)}
         (keyword? v)   {:name (name v)}
-        (number? v)    {:name (gensym 'u), :kind :float, :value v}
-        (:float v)     {:name (name v),    :kind :float, :value (:value v)}
-        (vec3? v)      {:name (gensym 'u), :kind :vec3,  :value (prepare-vec-uniform v)}
-        (:vec3 v)      {:name (name v),    :kind :vec3,  :value (prepare-vec-uniform (:value v))}
-        (vec4? v)      {:name (gensym 'u), :kind :vec4,  :value (prepare-vec-uniform (prepare-vec-uniform v))}
-        (:vec4 v)      {:name (name v),    :kind :vec4,  :value (prepare-vec-uniform (:value v))}
+        (:storage v)   {:name (name (:storage v)), :kind :image2D}
+        (number? v)    {:name (gensym 'u),         :kind :float, :value v}
+        (:float v)     {:name (name (:float v)),   :kind :float, :value (:value v)}
+        (vec3? v)      {:name (gensym 'u),         :kind :vec3,  :value (prepare-vec-uniform v)}
+        (:vec3 v)      {:name (name (:vec3 v)),    :kind :vec3,  :value (prepare-vec-uniform (:value v))}
+        (vec4? v)      {:name (gensym 'u),         :kind :vec4,  :value (prepare-vec-uniform (prepare-vec-uniform v))}
+        (:vec4 v)      {:name (name (:ve4 v)),     :kind :vec4,  :value (prepare-vec-uniform (:value v))}
         (fn? v)        (merge (standardize-uniform (v)) {:value v})))
 
 (defn render [v]
@@ -66,9 +71,9 @@
                        kind  (:kind u)
                        value (:value u)]
                    {:s named
-                    :t (if kind  {named (str (if (= v :storage) "layout(rgba8) ") "uniform " (name kind) " " named ";")} {})
+                    :t (if kind  {named (str (if (storage? v) "layout(rgba8) ") "uniform " (name kind) " " named ";")} {})
                     :u (if (nil? value) {} {named value})
-                    :r (if (= v :storage) #{named})})
+                    :r (if (storage? v) #{named})})
     (external-symbol? v) {:s (name v)}
     (coll? v) (let [step  (last v)
                     chain (render (butlast v))
