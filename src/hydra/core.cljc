@@ -20,15 +20,20 @@
   (if (empty? arr) true
       (and (f (first arr)) (all? f (rest arr)))))
 
+(defn prepare-vec-uniform [v]
+  (if (some fn? v)
+      (fn [] (map #(if (fn? %) (%) %) v))
+      v))
+
 (defn vec4? [v]
   (and (coll? v)
        (= 3 (count v))
-       (all? number? v)))
+       (all? #(number? (if (fn? %) (%) %)) v)))
 
 (defn vec3? [v]
   (and (coll? v)
        (= 3 (count v))
-       (all? number? v)))
+       (all? #(number? (if (fn? %) (%) %)) v)))
 
 (defn external-symbol? [v]
   (and (not= v :storage)
@@ -46,7 +51,8 @@
         (symbol? v)    {:name (name v)}
         (keyword? v)   {:name (name v)}
         (number? v)    {:name (gensym 'u), :kind :float, :value v}
-        (vec3? v)      {:name (gensym 'u), :kind :vec3,  :value v}
+        (vec3? v)      {:name (gensym 'u), :kind :vec3, :value (prepare-vec-uniform v)}
+        (vec4? v)      {:name (gensym 'u), :kind :vec4, :value (prepare-vec-uniform v)}
         (fn? v)        (merge (standardize-uniform (v)) {:value v})))
 
 (defn render [v]

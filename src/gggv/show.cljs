@@ -17,7 +17,7 @@
     (rotate 0.5)
     (pulsate 1 10.5)
     haze
-    (pride [1 1 1] [0.5 1 1] [0.2 1 1]
+    (pride [#(mod t 1) 1 1] [0.5 1 1] [0.2 1 1]
            1 1 1)
     invert
     hydra

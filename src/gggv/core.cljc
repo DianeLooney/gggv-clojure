@@ -2,7 +2,7 @@
 
 (defn osc [endpoint & data]
   (if (some fn? data)
-    (fn [] {:address endpoint, :args (map #(if (fn? %) (%) %) data)})
+    (fn [] {:address endpoint, :args (flatten (map #(if (fn? %) (%) %) data))})
     {:address endpoint, :args (flatten data)}))
 
 (defn uniform->osc [shader name value]
