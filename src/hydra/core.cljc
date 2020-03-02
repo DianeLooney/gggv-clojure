@@ -51,8 +51,11 @@
         (symbol? v)    {:name (name v)}
         (keyword? v)   {:name (name v)}
         (number? v)    {:name (gensym 'u), :kind :float, :value v}
-        (vec3? v)      {:name (gensym 'u), :kind :vec3, :value (prepare-vec-uniform v)}
-        (vec4? v)      {:name (gensym 'u), :kind :vec4, :value (prepare-vec-uniform v)}
+        (:float v)     {:name (name v),    :kind :float, :value (:value v)}
+        (vec3? v)      {:name (gensym 'u), :kind :vec3,  :value (prepare-vec-uniform v)}
+        (:vec3 v)      {:name (name v),    :kind :vec3,  :value (prepare-vec-uniform (:value v))}
+        (vec4? v)      {:name (gensym 'u), :kind :vec4,  :value (prepare-vec-uniform (prepare-vec-uniform v))}
+        (:vec4 v)      {:name (name v),    :kind :vec4,  :value (prepare-vec-uniform (:value v))}
         (fn? v)        (merge (standardize-uniform (v)) {:value v})))
 
 (defn render [v]
@@ -64,7 +67,7 @@
                        value (:value u)]
                    {:s named
                     :t (if kind  {named (str (if (= v :storage) "layout(rgba8) ") "uniform " (name kind) " " named ";")} {})
-                    :u (if value {named value})
+                    :u (if (nil? value) {} {named value})
                     :r (if (= v :storage) #{named})})
     (external-symbol? v) {:s (name v)}
     (coll? v) (let [step  (last v)
