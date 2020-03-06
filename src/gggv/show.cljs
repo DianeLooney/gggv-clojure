@@ -12,15 +12,14 @@
 (def cosin (.-cos js/Math))
 (def tan (.-tan js/Math))
 
-(-> (hydra
-     (-> (osc {})
-         (scale 54)
-         (rotate 0.5)
-         (pulsate 1 10.5)
-         (pride [1 1 1] [0.6 0.6 0.6] [0.3 0.3 0.3]
-                1 1 1)
-         (to 'x))
-     (-> (from ['x])
-         (scale #(mod (* 4 t) 20))
-         oc))
+(-> 
+    (osc {})
+    (scale 54)
+    (rotate 0.5)
+    (pulsate 1 10.5)
+    (pride [1 1 1] [0.6 0.6 0.6] [0.3 0.3 0.3]
+           1 1 1)
+    (scale #(mod (* 4 t) 20))
+    oc
+    hydra
     out)
