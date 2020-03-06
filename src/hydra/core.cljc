@@ -40,7 +40,7 @@
        (all? #(number? (if (fn? %) (%) %)) v)))
 
 (defn external-symbol? [v]
-  (and (not (storage?))
+  (and (not (storage? v))
        (or (symbol? v)
            (keyword? v))))
 
