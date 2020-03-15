@@ -14,7 +14,7 @@
 (def osc
   (partial colorize :osc []
            "Pixel osc(Pixel p) {
-              p.color = vec4(.5 * (1 + cos(p.xy)), 0, 1);
+              p.color = vec4(.5 * (vec2(1) + cos(p.xy)), 0, 1);
               return p;
             }"))
 

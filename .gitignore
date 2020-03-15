@@ -1,3 +1,5 @@
+/.shadow-cljs/
+/build/target/
 
 # Created by https://www.gitignore.io/api/node,code,clojure
 # Edit at https://www.gitignore.io/?templates=node,code,clojure

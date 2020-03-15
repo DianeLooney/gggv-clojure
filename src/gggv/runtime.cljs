@@ -1,8 +1,7 @@
 (ns gggv.runtime
   (:use [gggv.core :only (osc hash->osc)])
   (:require [clojure.string :as string]
-            [hydra.core :as h]
-            [lumo.core]))
+            [hydra.core :as h]))
 
 
 (println "#Started")
