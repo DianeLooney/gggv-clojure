@@ -84,6 +84,11 @@
 
 (defn shader-gen [n base-uniforms]
   (fn [& [specific-uniforms]] (shader-fn n base-uniforms [] specific-uniforms)))
+
 (defn shader [n base-uniforms]
   (fn [s & [specific-uniforms]] (shader-fn n base-uniforms s specific-uniforms)))
 
+(defn out [data]
+  (let [messages (hash->osc data)
+        suffix   (osc "/source.shader/set/input" "window" 0 (:name data))]
+    (apply push-osc (flatten [messages suffix]))))

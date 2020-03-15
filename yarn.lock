@@ -26,3 +26,8 @@ osc-min@^1.1.1:
   integrity sha512-8DbiO8ME85R75stgNVCZtHxB9MNBBNcyy+isNBXrsFeinXGjwNAauvKVmGlfRas5VJWC/mhzIx7spR2gFvWxvg==
   dependencies:
     binpack "~0"
+
+regl@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/regl/-/regl-1.4.2.tgz#6593c38868b569ea68410364048360367a21e813"
+  integrity sha512-wc/kE6kGmGfQk3G9f1Pai4TZ0K1pWxkD1Jeaj6CxJwEiB1jwHgEpqD84G2t7F0DmNXfQh7IUnoG1opxoONJ7Xg==

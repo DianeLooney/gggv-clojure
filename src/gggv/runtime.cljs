@@ -16,12 +16,12 @@
 (def Message (.-Message node-osc))
 (def client (Client. "127.0.0.1" 4200))
 (defn send-raw [msg]
-  (println msg)
+  ;(println msg)
   (.send client (clj->js msg)))
 (defn send [msg]
   (cond
     (nil? msg) nil
-    (fn? msg) (js/setInterval #(send-raw (msg)) 17)
+    (fn? msg) (js/setInterval #(send-raw (msg)) (/ 1000 60))
     :else  (send-raw msg)))
 
 (def queue (atom []))
@@ -72,8 +72,3 @@
 
 (defn mag-linear [input]
   (merge input {:mag "LINEAR"}))
-
-(defn out [data]
-  (let [messages (hash->osc data)
-        suffix   (osc "/source.shader/set/input" "window" 0 (:name data))]
-    (apply push-osc (flatten [messages suffix]))))

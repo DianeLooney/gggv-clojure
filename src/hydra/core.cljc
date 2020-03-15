@@ -31,7 +31,7 @@
 
 (defn vec4? [v]
   (and (coll? v)
-       (= 3 (count v))
+       (= 4 (count v))
        (all? #(number? (if (fn? %) (%) %)) v)))
 
 (defn vec3? [v]
@@ -65,7 +65,7 @@
 
 (defn render [v]
   (cond
-    (nil? v) {:s "ftc", :u {}, :t {}, :r #{}}
+    (nil? v) {:s "Pixel(ftc, vec4(0))", :u {}, :t {}, :r #{}}
     (uniform? v) (let [u (standardize-uniform v)
                        named (:name u)
                        kind  (:kind u)
