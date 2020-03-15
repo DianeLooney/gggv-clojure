@@ -22,16 +22,16 @@
   (partial geometry :pulsate [1 0]
            "Pixel pulsate(Pixel p, float offset, float amplitude) {
               p.xy = cToP(p.xy);
-              p.xy.x += 20*sin(p.xy.x + time/9);
+              p.xy.x += amplitude*sin(p.xy.x + time/9.);
               return p;
             }"))
 
 (def polarize
   (partial geometry :polarize []
            "Pixel polarize(Pixel p) {
-            p.xy = cToP(p.xy);
-            return p;
-          }"))
+              p.xy = cToP(p.xy);
+              return p;
+            }"))
 
 (def center
   (partial geometry :center []
@@ -149,7 +149,7 @@
 (def invert
   (partial recolor :invert []
            "Pixel invert(Pixel p) {
-              p.color = vec4(1 - p.color.rgb, p.color.a);
+              p.color = vec4(1. - p.color.rgb, p.color.a);
               return p;
             }"))
 
