@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "codemirror": "^5.52.0",
     "node-osc": "^4.1.4",
     "regl": "^1.4.2"
   }

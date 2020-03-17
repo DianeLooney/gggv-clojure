@@ -1,11 +1,28 @@
 (ns browser.core
   (:require ["regl" :as r]
             [browser.stubs :as stubs]
-            [clojure.string :as string])
-  (:use [hydra.core :only [render]]
+            [clojure.string :as string]
+            [cljs.reader :as reader]
+            ["codemirror/lib/codemirror" :as cm]
+            [cljs.js])
+  (:use [cljs.core :only [eval]]
+        [hydra.core :only [render]]
         [hydra.filters :only [osc
                               invert shift-hsv
                               polarize pulsate warp]]))
+
+(defn fake-eval [form]
+  (let [st (cljs.js/empty-state)]
+    (cljs.js/compile-str st form "asdf" {:ns (find-ns cljs.core)} println)))
+
+(let [eval *eval*
+      st (cljs.js/empty-state)]
+  (set! *eval*
+        (fn [form]
+          (binding [cljs.env/*compiler* st
+                    *ns* (find-ns cljs.analyzer/*cljs-ns*)
+                    cljs.js/*eval-fn* cljs.js/js-eval]
+            (eval form)))))
 
 (def regl
   (atom nil))
@@ -56,18 +73,16 @@
      :count 6
      :uniforms uniforms}))
 
-(def show
+(def show-src
   (->
    (osc {} [])
-   (pulsate (fn [v]
-              (println v)
-              (.-time v)) 100)
+   (pulsate (fn [v] (.-time v)) 100)
    ;warp
    ;(shift-hsv 0.1 0.7 0.9)
    invert
    render))
 
-(defn test-shader [regl]
+(defn test-shader [regl show]
   (let [rendered (hydra->browser regl show)]
     {:source rendered
      :uniforms (:u show)}))
@@ -77,32 +92,34 @@
   (draw (clj->js vals)))
 
 (defn prepare! []
-  (swap! regl #(r))
+  (fake-eval "
+    (ns cljs.core
+      (:require-macros [cljs.js :refer [dump-core]]
+                       [cljs.env.macros :as env]))
+    (-> 1 (+ 2))")
+
+  (swap! regl #(r (.getElementById js/document "main")))
   (set! (.-reglCtx js/document) @regl)
   (set! (.-arr js/document) (clj->js [1 0 1 1]))
-  (let [shader (test-shader regl)
+  (let [shader (test-shader regl show-src)
         source (:source shader)
         uniforms (:uniforms shader)
         draw (@regl (clj->js source))]
     (.frame
      @regl
      (fn [v]
-       (println v)
-       (let [time (.-time v)
+       (let [time   (.-time v)
              scaleX (.-drawingBufferWidth v)
              scaleY (.-drawingBufferHeight v)]
          (frame
           draw
           (merge
-           {:time time
-            :scaleX scaleX
-            :scaleY scaleY}
-           (into
-            {}
-            (map
-             (fn [[name val]]
-               [name (if (fn? val) (val v) val)])
-             uniforms)))))))))
+           {:time time, :scaleX scaleX, :scaleY scaleY}
+           (into {}
+                 (map
+                  (fn [[name val]]
+                    [name (if (fn? val) (val v) val)])
+                  uniforms)))))))))
 
 (defn reload! []
   (println (.-reglCtx js/document))

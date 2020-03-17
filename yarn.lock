@@ -7,6 +7,11 @@ binpack@~0:
   resolved "https://registry.yarnpkg.com/binpack/-/binpack-0.1.0.tgz#bd3d0974c3f2a0446e17df4f60b55a72a205a97e"
   integrity sha1-vT0JdMPyoERuF99PYLVacqIFqX4=
 
+codemirror@^5.52.0:
+  version "5.52.0"
+  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.52.0.tgz#4dbd6aef7f0e63db826b9a23922f0c03ac75c0a7"
+  integrity sha512-K2UB6zjscrfME03HeRe/IuOmCeqNpw7PLKGHThYpLbZEuKf+ZoujJPhxZN4hHJS1O7QyzEsV7JJZGxuQWVaFCg==
+
 jspack@0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/jspack/-/jspack-0.0.4.tgz#32dd35c7fdcb3e3456c18fbb7ef9ed0bc6238177"

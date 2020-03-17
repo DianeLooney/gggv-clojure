@@ -4,5 +4,4 @@
 (defn main! []
   (set! (.-onload js/window) browser/prepare!))
 
-(defn reload! []
-  (browser/reload!))
+(defn reload! [] (browser/reload!))

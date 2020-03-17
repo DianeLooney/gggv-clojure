@@ -2,10 +2,73 @@
 
 <head>
     <meta charset="utf-8" />
+    <link rel="stylesheet" href="cm/lib/codemirror.css">
+    <link rel="stylesheet" href="cm/theme/midnight.css">
+    <script src="cm/lib/codemirror.js"></script>
+    <script src="cm/keymap/vim.js"></script>
+    <script src="cm/mode/clojure/clojure.js"></script>
     <script src="target/main.js"></script>
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        .CodeMirror {
+            position: absolute;
+            z-index: 1;
+            background: none !important;
+            width: 100vw;
+            height: 100vh;
+            border: none;
+            font-size: 14px;
+        }
+
+        #container {
+            position: absolute;
+            z-index: 0;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+        }
+
+        span[role="presentation"] {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+    </style>
 </head>
 
 <body>
+    <textarea id="editor"></textarea>
+    <div id="command-display"></div>
+    <div id="container"></div>
+    <script>
+        const ta = document.getElementById('editor');
+        CodeMirror.commands.save = function () { };
+        const editor = CodeMirror.fromTextArea(ta, {
+            lineNumbers: true,
+            mode: "text/x-clojure",
+            // keyMap: "vim",
+            matchBrackets: true,
+            showCursorWhenSelecting: true,
+            inputStyle: "contenteditable",
+            theme: 'midnight',
+            extraKeys: {
+                'Ctrl-Enter': () => console.log('saved!'),
+            },
+        });
+        document.editor = editor;
+        /*var commandDisplay = document.getElementById('command-display');
+        var keys = '';
+        CodeMirror.on(editor, 'vim-keypress', function (key) {
+            keys = keys + key;
+            commandDisplay.innerHTML = keys;
+        });
+        CodeMirror.on(editor, 'vim-command-done', function (e) {
+            keys = '';
+            commandDisplay.innerHTML = keys;
+        });*/
+    </script>
 </body>
 
 </html>
