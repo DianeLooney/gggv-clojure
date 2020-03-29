@@ -7,22 +7,13 @@
             [cljs.js])
   (:use [cljs.core :only [eval]]
         [hydra.core :only [render]]
-        [hydra.filters :only [osc
-                              invert shift-hsv
-                              polarize pulsate warp]]))
-
-(defn fake-eval [form]
-  (let [st (cljs.js/empty-state)]
-    (cljs.js/compile-str st form "asdf" {:ns (find-ns cljs.core)} println)))
-
-(let [eval *eval*
-      st (cljs.js/empty-state)]
-  (set! *eval*
-        (fn [form]
-          (binding [cljs.env/*compiler* st
-                    *ns* (find-ns cljs.analyzer/*cljs-ns*)
-                    cljs.js/*eval-fn* cljs.js/js-eval]
-            (eval form)))))
+        [hydra.filters :only
+         [oc from to diff
+          swizzleRGB swizzleRBG swizzleGRB swizzleGBR swizzleBGR swizzleBRG
+          shape
+          color-scale mod-hsv
+          scale-x scroll
+          hsv->rgb warp polarize cells center pulsate invert haze pride threshold rotate pixelate scale osc shift-hsv posterize]]))
 
 (def regl
   (atom nil))
@@ -53,7 +44,8 @@
         count 6
         frag (string/join
               "\n"
-              (flatten ["precision mediump float;"
+              (flatten ["precision highp float;"
+                        "#define PI 3.1415926535897932384626433832795"
                         "struct Pixel { vec2 xy; vec4 color; };"
                         (apply str stubs/all)
                         (vals (:t h))
@@ -73,13 +65,90 @@
      :count 6
      :uniforms uniforms}))
 
+(def sin (.-sin js/Math))
+(def cosin (.-cos js/Math))
+(def tan (.-tan js/Math))
+
+(defn now [] (/ (.getTime (js/Date.)) 1000))
+(def start-time (+ (now) 5))
+(defn ts [minutes seconds] (+ start-time seconds (* minutes 60)))
+
+(defn mix [x1 x2 y1 y2 x]
+  (cond
+    (< x x1) y1
+    (> x x2) y2
+    :else (+ (* y2 (/ (- x x1) (- x2 x1)))
+             (* y1 (/ (- x2 x) (- x2 x1))))))
+
+(defn fade [t-start t-end smooth from to]
+  (let [n (now)]
+    (if
+     (< n t-start)
+      (mix (- t-start smooth) t-start          from to   n)
+      (mix t-end              (+ t-end smooth) to   from n))))
+
+
+
+
+(def warp-amount
+  (partial fade (ts 2 53) (ts 3 18) 10 0 3))
+(defn co [] (/ (mod (now) 4) 4))
+(defn co2 [] (/ (mod (+ 2 (now)) 4) 4))
+
+
+
+(def diamond-size
+  (partial fade (ts 0 3) (ts 2 30) 3 1.5 1.05))
+
+(def osc-amplitude
+  (partial fade (ts 0 27) (ts 4 10) 12 0 1))
+
+(def sat
+  (partial fade (ts 0 55) (ts 3 55) 5 0 1))
+
+(defn hue []
+  (fade (ts 1 15) (ts 2 40) 2 0.8 (mod (/ (now) 12) 1)))
+
+(def pulse-modifier (partial fade (ts 0 38) (ts 3 55) 2 0 1))
+
+(defn pulse-1-size []
+  (* (pulse-modifier) 4 (- 1 (co))))
+(defn pulse-1-color []
+  (let [x (co)]
+    [x x x]))
+(defn pulse-2-size []
+  (* (pulse-modifier) 4 (- 1 (co2))))
+(defn pulse-2-color []
+  (let [x (co2)]
+    [x x x]))
+(defn haze-speed []
+  1)
+
 (def show-src
   (->
-   (osc {} [])
-   (pulsate (fn [v] (.-time v)) 100)
-   ;warp
-   ;(shift-hsv 0.1 0.7 0.9)
-   invert
+   (osc {} [osc-amplitude])
+   (mod-hsv hue sat)
+
+   (shape 50 diamond-size 0.2)
+
+   (posterize 4)
+
+ ; -- 2 -- remove above 
+   (shape 3 pulse-1-size 0 pulse-1-color)
+   (shape 3 pulse-2-size 0 pulse-2-color)
+
+   (color-scale 0.4)
+
+
+ ;  (haze haze-speed)
+
+ ; -- leave alone
+   (scale (* 0.506 3.14159))
+   (rotate 0.75)
+   (scale-x 5)
+   (scroll :-0.25*time)
+   (warp warp-amount)
+   polarize
    render))
 
 (defn test-shader [regl show]
@@ -92,12 +161,6 @@
   (draw (clj->js vals)))
 
 (defn prepare! []
-  (fake-eval "
-    (ns cljs.core
-      (:require-macros [cljs.js :refer [dump-core]]
-                       [cljs.env.macros :as env]))
-    (-> 1 (+ 2))")
-
   (swap! regl #(r (.getElementById js/document "main")))
   (set! (.-reglCtx js/document) @regl)
   (set! (.-arr js/document) (clj->js [1 0 1 1]))

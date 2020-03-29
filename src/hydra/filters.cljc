@@ -1,5 +1,5 @@
 (ns hydra.filters
-  (:use [hydra.core :only (colorize geometry recolor)]))
+  (:use [hydra.core :only [colorize geometry recolor]]))
 
 (def from
   (partial colorize :from [:storage]
@@ -7,14 +7,32 @@
               vec2 _xy = fract(xy);
               return imageLoad(
                 storage,
-                ivec2(_xy*vec2(windowWidth, windowHeight))
+                ivec2(_xy*vec2(1920., 1080.))
               );
             }"))
 
 (def osc
-  (partial colorize :osc []
-           "Pixel osc(Pixel p) {
-              p.color = vec4(.5 * (vec2(1) + cos(p.xy)), 0, 1);
+  (partial colorize :osc [1]
+           "Pixel osc(Pixel p, float amplitude) {
+              p.color = vec4(amplitude * .5 * (vec2(1) + cos(p.xy * 2. * PI)), 0, 1);
+              return p;
+            }"))
+
+(def shape
+  (partial recolor :shape [3 1 0.1 [1 1 1]]
+           "Pixel shape(Pixel p, float sides, float radius, float smoothing, vec3 color) {
+              vec2 st = fract(p.xy) * 2. - 1.;
+              float a = atan(st.x,st.y)+3.1416;
+              float r = (2.*3.1416)/sides;
+              float d = cos(floor(.5+a/r)*r-a)*length(st);
+              p.color += vec4(color * (1. - smoothstep(radius,radius + smoothing,d)), 1.0);
+              return p;
+            }"))
+
+(def color-scale
+  (partial recolor :colorScale [1]
+           "Pixel colorScale(Pixel p, float x) {
+              p.color *= x;
               return p;
             }"))
 
@@ -23,6 +41,14 @@
            "Pixel pulsate(Pixel p, float offset, float amplitude) {
               p.xy = cToP(p.xy);
               p.xy.x += amplitude*sin(p.xy.x + time/9.);
+              return p;
+            }"))
+
+(def scroll
+  (partial geometry :scroll [0 0]
+           "Pixel scroll(Pixel p, float dx, float dy) {
+              p.xy.x += dx;
+              p.xy.y += dy;
               return p;
             }"))
 
@@ -36,7 +62,7 @@
 (def center
   (partial geometry :center []
            "Pixel center(Pixel p) {
-              p.xy = (0.5 - p.xy)*vec2(windowWidth/windowHeight, 1);
+              p.xy = (0.5 - p.xy)*vec2(1920./1080., 1);
               return p;
             }"))
 
@@ -85,9 +111,9 @@
             }"))
 
 (def warp
-  (partial geometry :warp []
-           "Pixel warp(Pixel p) {
-              p.xy = atan(p.xy);
+  (partial geometry :warp [1 5]
+           "Pixel warp(Pixel p, float amplitude, float period) {
+              p.xy.y += amplitude * sin(p.xy.x * period);
               return p;
             }"))
 
@@ -95,6 +121,20 @@
   (partial geometry :scale [20]
            "Pixel scale(Pixel p, float r) {
               p.xy = p.xy * vec2(r);
+              return p;
+            }"))
+
+(def scale-x
+  (partial geometry :scaleXDiane [4]
+           "Pixel scaleX(Pixel p, float r) {
+              p.xy.x *= r;
+              return p;
+            }"))
+
+(def scale-y
+  (partial geometry :scaleY [4]
+           "Pixel scaleY(Pixel p, float r) {
+              p.xy.y *= r;
               return p;
             }"))
 
@@ -108,7 +148,7 @@
 (def rotate
   (partial geometry :rotate [0]
            "Pixel rotate(Pixel p, float theta) {
-              p.xy = pToC(cToP(p.xy) + vec2(0, 2*PI*theta));
+              p.xy = pToC(cToP(p.xy) + vec2(0, 2.*PI*theta));
               return p;
             }"))
 
@@ -170,12 +210,24 @@
               p.color = pow(p.color, vec4(1. / alpha));
               return p;
             }"))
+
 (def oc
   (partial recolor :setOutputColor []
            "Pixel setOutputColor(Pixel p) {
               outputColor = p.color;
               return p;
             }"))
+
+(def mod-hsv
+  (partial recolor :modHSV [-1 -1 -1]
+           "Pixel modHSV(Pixel p, float h, float s, float v) {
+             p.color.rgb = rgb2hsv(p.color.rgb);
+             if (h >= 0.) p.color.r = h;
+             if (s >= 0.) p.color.g = s;
+             if (v >= 0.) p.color.b = v;
+             p.color.rgb = hsv2rgb(p.color.rgb);
+             return p;
+           }"))
 
 (def store
   (partial recolor :store [:storage]

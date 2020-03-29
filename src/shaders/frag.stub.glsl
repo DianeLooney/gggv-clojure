@@ -204,7 +204,4 @@ vec2 cellular(vec2 P, float seed) {
 	return sqrt(d1.xy);
 }
 
-uniform float a;
-uniform float b;
-uniform float c;
-uniform float d;
+uniform float colorization = 0;

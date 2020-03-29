@@ -22,8 +22,8 @@
 
 (defn prepare-vec-uniform [v]
   (if (some fn? v)
-      (fn [] (map #(if (fn? %) (%) %) v))
-      v))
+    (fn [] (map #(if (fn? %) (%) %) v))
+    v))
 
 (defn storage? [v]
   (or (= v :storage)
@@ -61,9 +61,10 @@
         (:vec3 v)      {:name (name (:vec3 v)),    :kind :vec3,  :value (prepare-vec-uniform (:value v))}
         (vec4? v)      {:name (gensym 'u),         :kind :vec4,  :value (prepare-vec-uniform (prepare-vec-uniform v))}
         (:vec4 v)      {:name (name (:ve4 v)),     :kind :vec4,  :value (prepare-vec-uniform (:value v))}
-        (fn? v)        (if js/document
-                           (merge (standardize-uniform (v (clj->js {:time 0}))) {:value v})
-                           (merge (standardize-uniform (v                    )) {:value v}))))
+        (fn? v)        (if
+                        (js/eval "this.document")
+                         (merge (standardize-uniform (v)) {:value v})
+                         (merge (standardize-uniform (v (clj->js {:time 0}))) {:value v}))))
 
 (defn render [v]
   (cond
